@@ -9,10 +9,13 @@ import threading
 def execute(cmd):
     cmd = cmd.strip()
     if not cmd:
-        return
-    output = subprocess.check_output(shlex.split(cmd),
+        return ''
+    try:
+        output = subprocess.check_output(shlex.split(cmd),
                                      stderr=subprocess.STDOUT)
-    return output.decode()
+        return output.decode()
+    except subprocess.CalledProcessError as e:
+        return f"Command failed: {e.output.decode()}"
 
 class NetCat:
     def __init__(self, args, buffer=None):
@@ -66,6 +69,7 @@ class NetCat:
         if self.args.execute:
             output = execute(self.args.execute)
             client_socket.send(output.encode())
+            return
 
         elif self.args.upload:
             file_buffer = b''
